@@ -1,0 +1,30 @@
+﻿<Window x:Class="Pereverter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Pereverter"
+        mc:Ignorable="d"
+        Title="Pereverter"
+        SizeToContent="Height"
+         Width="500">
+    <Grid Margin="0,10,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" MaxWidth="400"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Margin="5,0" HorizontalAlignment="Right" Text="Путь к файлу протяженностей:"/>
+        <TextBox Text="{Binding LengthPath, Mode=TwoWay}" Grid.Row="0" Grid.Column="1"/>
+        <Button Command="{Binding SetLengthPathCmd}" Grid.Row="0" Grid.Column="2" Padding="5,0" Content="..."/>
+        <TextBlock Margin="5,0" Grid.Row="1" HorizontalAlignment="Right" Text="Путь к файлу с данными:"/>
+        <TextBox Text="{Binding DataPath, Mode=TwoWay}" Grid.Row="1" Grid.Column="1"/>
+        <Button Command="{Binding SetDataPathCmd}" Grid.Row="1" Grid.Column="2" Padding="5,0" Content="..."/>
+        <Button Height="30" Command="{Binding CalculateCmd}" Grid.ColumnSpan="3" Grid.Row="2" Content="Посчитать"/>
+    </Grid>
+</Window>
