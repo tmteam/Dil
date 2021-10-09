@@ -1,0 +1,33 @@
+﻿<Window x:Class="Dil.Coordinator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        
+        xmlns:local="clr-namespace:Dil.Coordinator"
+        mc:Ignorable="d"
+        Title="Coordinator" Background="DarkSlateBlue" Height="350" Width="525">
+    <Grid Margin="0,10,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" MaxWidth="400"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Foreground="White" Margin="5,0" HorizontalAlignment="Right" Text="Путь к файлу координат:"/>
+        <TextBox Text="{Binding CoordinatePath, Mode=TwoWay}" Grid.Row="0" Grid.Column="1"/>
+        
+        <Button Command="{Binding SetCoordinatePathCmd}" Grid.Row="0" Grid.Column="2" Padding="5,0" Content="..."/>
+        <Button Command="{Binding PasteCoordinateCmd}"   Grid.Row="0" Grid.Column="3" Padding="5,0" Content="взять из буффера"/>
+        <TextBlock Foreground="White" Margin="5,0" Grid.Row="1" HorizontalAlignment="Right" Text="Файл с данными:"/>
+        <TextBox Text="{Binding DataPath, Mode=TwoWay}" Grid.Row="1" Grid.Column="1"/>
+        <Button Command="{Binding SetDataPathCmd}" Grid.Row="1" Grid.Column="2" Padding="5,0" Content="..."/>
+        <Button Command="{Binding PasteDataPathCmd}" Grid.Row="1" Grid.Column="3" Padding="5,0" Content="взять из буффера"/>
+        <Button Height="30" Command="{Binding CalculateCmd}" Grid.ColumnSpan="4" Grid.Row="2" Content="Посчитать"/>
+    </Grid>
+</Window>
