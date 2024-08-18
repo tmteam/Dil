@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Dil.Core.Entities
+namespace Dil.Core.Entities;
+
+public class Coordinate
 {
-    public class Coordinate
+    public Coordinate(Distance distance, int latitudeMajor,  decimal latitudeMinor,int longitudeMajor, decimal longitudeMinor)
     {
-        public Coordinate(Distance distance, int latitudeMajor,  decimal latitudeMinor,int longitudeMajor, decimal longitudeMinor)
-        {
             Distance = distance;
             LatitudeMajor = latitudeMajor;
             LongitudeMajor = longitudeMajor;
@@ -16,14 +16,14 @@ namespace Dil.Core.Entities
             LongitudeMinor = longitudeMinor;
         }
         
-        public Distance Distance { get; }
-        public int LatitudeMajor { get; }
-        public Decimal LatitudeMinor { get; }
-        public int LongitudeMajor { get; }
-        public Decimal LongitudeMinor { get; }
+    public Distance Distance { get; }
+    public int LatitudeMajor { get; }
+    public Decimal LatitudeMinor { get; }
+    public int LongitudeMajor { get; }
+    public Decimal LongitudeMinor { get; }
 
-        public static Coordinate ParseOrNull(string line)
-        {
+    public static Coordinate ParseOrNull(string line)
+    {
             var dataItem = DataItem.ParseOrNull(line);
             if (dataItem.Data.Length < 4)
                 return null;
@@ -43,11 +43,11 @@ namespace Dil.Core.Entities
                 longitudeMajor: longMajor, 
                 longitudeMinor: longMinor);
         }
-    }
-    public class Coordinates
+}
+public class Coordinates
+{
+    public static Coordinates Parse(string text)
     {
-        public static Coordinates Parse(string text)
-        {
             int strNumber = 0;
             var items = new List<Coordinate>();
             foreach (var line in text.Split(new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries))
@@ -64,14 +64,14 @@ namespace Dil.Core.Entities
             return new Coordinates {Items = items.ToArray()};
         }
 
-        public Coordinate GetOrNull(Distance distance)
-        {
+    public Coordinate GetOrNull(Distance distance)
+    {
             return Items.FirstOrDefault(i => Equals(i.Distance, distance));
         }
-        public Coordinate[] Items { get; private set; }
+    public Coordinate[] Items { get; private set; }
 
-        public static Coordinates ReadFromFile(string filePath)
-        {
+    public static Coordinates ReadFromFile(string filePath)
+    {
             string text;
             try
             {
@@ -84,5 +84,4 @@ namespace Dil.Core.Entities
 
             return Parse(text);
         }
-    }
 }

@@ -4,12 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Dil.Core.Entities
+namespace Dil.Core.Entities;
+
+public class DataItems
 {
-    public class DataItems
+    public DataItem[] Items { get; private set; }
+
+    public static DataItems Parse(string text)
     {
-        public static DataItems Parse(string text)
-        {
             int strNumber = 0;
             var items = new List<DataItem>();
             foreach (var line in text.Split(new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries))
@@ -26,8 +28,8 @@ namespace Dil.Core.Entities
             return new DataItems {Items = items.ToArray()};
         }
 
-        public static DataItems ReadFromFile(string filePath)
-        {
+    public static DataItems ReadFromFile(string filePath)
+    {
             string text;
             try
             {
@@ -40,18 +42,17 @@ namespace Dil.Core.Entities
 
             return Parse(text);
         }
-        public DataItem[] Items { get; private set; }
-    }
+}
 
-    public class DataItem
+public class DataItem
+{
+    public Distance Distance { get; }
+    public readonly int Km;
+    public readonly int M;
+    public readonly string[] Data;
+
+    public static DataItem ParseOrNull(string line)
     {
-        public Distance Distance { get; }
-        public readonly int Km;
-        public readonly int M;
-        public readonly string[] Data;
-
-        public static DataItem ParseOrNull(string line)
-        {
             var items = line.Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
             if(items.Length<2)
                 return null;
@@ -62,24 +63,21 @@ namespace Dil.Core.Entities
             return new DataItem(km, m, items.Skip(2).ToArray());
         }
         
-        public DataItem(int km, int m, string[] data)
-        {
+    public DataItem(int km, int m, string[] data)
+    {
             Distance = new Distance(km, m);
             Km = km;
             M = m;
             Data = data;
         }
         
-        public DataItem(Distance distance, string[] data)
-        {
+    public DataItem(Distance distance, string[] data)
+    {
             Distance = distance;
             Km = distance.Km;
             M = distance.M;
             Data = data;
         }
 
-        public void AppendTo(StringBuilder sb) => sb.Append($"\r\n{Km}\t{M}\t{string.Join("\t", Data)}");
-    }
+    public void AppendTo(StringBuilder sb) => sb.Append($"\r\n{Km}\t{M}\t{string.Join("\t", Data)}");
 }
-
-

@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Text;
 using Dil.Core.Entities;
 
 namespace Usrednator;
@@ -7,17 +6,7 @@ namespace Usrednator;
 public static class Helper
 {
 
-    public static string ConvertTableToFormatedText(IEnumerable<NumberDataItem> data)
-    {
-        var filtredText = new StringBuilder();
-        foreach (var entry in data)
-        {
-            filtredText.AppendLine(
-                $"{entry.Distance.Km}\t{entry.Distance.M}\t{string.Join("\t", entry.Data.Select(d => d.ToString("F1")))}");
-        }
 
-        return filtredText.ToString();
-    }
 
     public static string[] SplitLines(string originalText)
     {
@@ -26,161 +15,86 @@ public static class Helper
     }
 
 
-    private static void ArraySummOrThrow(this double[] origin, double[] addition, int rowNumber)
+    public static void ArrayInplaceSummOrThrow(this double[] origin, double[] addition, int? displayRowNumber = null)
     {
         if (origin.Length != addition.Length)
         {
-            throw new InvalidDataException($"Количество данных в строке {rowNumber} отличается от строки {rowNumber - 1}");
+            if(displayRowNumber!=null)
+                throw new InvalidDataException(
+                    $"Количество данных в строке {displayRowNumber} отличается от строки {displayRowNumber - 1}");
+            else
+                throw new InvalidDataException(
+                    "Количество данных в строках отличается");
         }
 
         for (int j = 0; j < origin.Length; j++)
             origin[j] += addition[j];
     }
-    public static void SetZeroPivot(LinkedList<NumberDataItem> entries, int averageMetters)
+    
+    private static double[] ArraySubstrOrThrow(this double[] origin, double[] substr, int? displayRowNumber = null)
     {
-        /*
-         * При появлении нового километра в этой же строке должен прописаться 0 метров
-         * и суммирование должно идти от нуля до, например, 10 метров.
-         *
-         *  В том случае, когда в исходном файле ноль не прописан (такое бывает нечасто, но бывает),
-         *  а напротив введенного километра стоит 1 или 2 метра нулю нужно присвоить значение
-         *  предыдущей строки (примыкающей к столбу).
-         *
-         *  Если длина участка суммирования перед новым столбом будет меньше, примерно,
-         *  двух третей установленной оператором длины участка суммирования,
-         *  этот кусок приобщается к предыдущему участку, который усредняется с большим количеством метров,
-         *  чем установлено в программе обработки.
-         *
-         *  Если участок суммирования, примыкающий к километровому столбу, будет больше 2/3,
-         *  то он усредняется по фактической длине.
-         *
-         *  В случае пропуска километрового столба, или двух, или трёх алгоритм сохраняется,
-         *  при появлении столба в метрах снова должны пройти нули.
-         */
-
-        var first = entries.First();
-        if (first.Distance.M != 0 && entries.Count>1)
+        if (origin.Length != substr.Length)
         {
-            /*
-             * В том случае, когда в исходном файле ноль не прописан(такое бывает нечасто, но бывает),
-             * а напротив введенного километра стоит 1 или 2 метра нулю нужно присвоить значение
-             * предыдущей строки(примыкающей к столбу).
-             */
-            var second = entries.ElementAt(1);
-            if (second.Distance.Km == first.Distance.Km && second.Distance.M <= averageMetters * 0.25) 
-            {
-                var zeroEntry = new NumberDataItem(new Distance(first.Distance.Km,0), second.Data );
-                entries.AddFirst(zeroEntry);
-            }
+            if(displayRowNumber!=null)
+                throw new InvalidDataException(
+                    $"Количество данных в строке {displayRowNumber} отличается от строки {displayRowNumber - 1}");
+            else
+                throw new InvalidDataException(
+                    "Количество данных в строках отличается");
         }
 
+        var result = new double[origin.Length];
+        
+        for (int j = 0; j < origin.Length; j++)
+            result[j] = origin[j] - substr[j];
+        return result;
     }
-    public static LinkedList<NumberDataItem> AverageFilterSync(IEnumerable<NumberDataItem> origin, int averageMetters, bool useZeroPivots)
+    
+    private static double[] ArraySummOrThrow(this double[] origin, double[] b, int? displayRowNumber = null)
     {
-        var answer = new LinkedList<NumberDataItem>();
-        if (!origin.Any())
-            return answer;
-            
-        var startOfInterval = origin.First().Distance;
-        var endOfInterval = startOfInterval.AppendMeters(averageMetters);
-            
-        var buffer = new LinkedList<NumberDataItem>();
-        var previousBuffer = new LinkedList<NumberDataItem>();
-
-        int bufferStartIndex = 0;
-        int currentKm = startOfInterval.Km;
-        int lastMeterInterval = averageMetters;
-        int i = -1;
-
-        var previousDistance = new Distance();
-        var prePreviousDistance = new Distance();
-            
-        foreach (var current in origin)
+        if (origin.Length != b.Length)
         {
-            i++;
-            if (current.Distance.Km > currentKm)
-            {
-                #region Обработка перехода на другой киллометр
-
-                currentKm = current.Distance.Km;
-
-                if (i > 1)
-                {
-                    //Если две последних записи в одном километре - то можем скорректироваться по ним
-                    if (prePreviousDistance.Km == previousDistance.Km)
-                    {
-                        lastMeterInterval = previousDistance.M - prePreviousDistance.M;
-                    }
-
-                    //Если нужна привязка к нулевому метру киллометра
-                    if (useZeroPivots)
-                    {
-                        endOfInterval = new Distance(current.Distance.Km, 0);
-                            
-                        /*
-                         *  Если длина участка суммирования перед новым столбом < 0.66*averageMeters,
-                         *  то этот кусок приобщается к предыдущему участку,
-                         *  который усредняется с большим количеством метров,
-                         *  чем установлено в программе обработки.
-                         *
-                         * Если участок суммирования, примыкающий к километровому столбу, будет больше 2 / 3 { averageMeters},
-                         * то он усредняется по фактической длине.
-                         */
-                        if (lastMeterInterval < averageMetters * 0.66 && answer.Any())
-                        {
-                            //Сливаем два буфера
-                            foreach (var entry in previousBuffer)
-                                buffer.AddFirst(entry);
-                            previousBuffer.Clear();
-
-                            //Отменяем последнее значение. Его нужно посчитать заново
-                            startOfInterval = answer.Last().Distance;
-                            answer.RemoveLast();
-                        }
-
-                    }
-                    else
-                    {
-                        //Предполагаемая длина километра
-                        var lastMeterOfKm = previousDistance.M + lastMeterInterval;
-                        //Корректируем концовку интервала
-                        endOfInterval = endOfInterval.ConvertToNextKm(current.Distance.Km, lastMeterOfKm);
-                    }
-                }
-                #endregion
-            }
-
-
-            if (current.Distance >= endOfInterval)
-            {
-                #region Обработка полученного интервала
-                if (buffer.Any())
-                {
-                    var resultData = new double[buffer.First().Data.Length];
-                    int j = -1;
-                    foreach (var entry in buffer)
-                    {
-                        j++;
-                        resultData.ArraySummOrThrow(entry.Data, bufferStartIndex + j);
-                    }
-
-                    answer.AddLast(new NumberDataItem(startOfInterval, resultData.Select(r => r / buffer.Count).ToArray()));
-                    previousBuffer = buffer;
-                    buffer = new LinkedList<NumberDataItem>();
-                }
-                bufferStartIndex = i;
-                startOfInterval = endOfInterval;
-                endOfInterval = endOfInterval.AppendMeters(averageMetters);
-                #endregion
-            }
-
-            if (current.Distance < endOfInterval)
-                buffer.AddLast(current);
-
-            prePreviousDistance = previousDistance;
-            previousDistance = current.Distance;
-
+            if(displayRowNumber!=null)
+                throw new InvalidDataException(
+                    $"Количество данных в строке {displayRowNumber} отличается от строки {displayRowNumber - 1}");
+            else
+                throw new InvalidDataException(
+                    "Количество данных в строках отличается");
         }
-        return answer;
+
+        var result = new double[origin.Length];
+        
+        for (int j = 0; j < origin.Length; j++)
+            result[j] = origin[j] + b[j];
+        return result;
     }
-}
+    
+    private static double[] ArrayDivide(this double[] origin, double divider)
+    {
+        var result = new double[origin.Length];
+        for (int j = 0; j < origin.Length; j++)
+            result[j] = origin[j] /divider;
+        return result;
+    }
+    
+    private static double[] ArrayMultiply(this double[] origin, double multiplier)
+    {
+        var result = new double[origin.Length];
+        for (int j = 0; j < origin.Length; j++)
+            result[j] = origin[j] * multiplier;
+        return result;
+    }
+    
+    public static NumberDataItem Interpolate(NumberDataItem left, NumberDataItem right, Distance target)
+    {
+        var intervalDistance = right.Distance.DifferenceInMetters(left.Distance);
+        var distanceToTarget = target.DifferenceInMetters(left.Distance);
+
+        var differenceInData = right.Data.ArraySubstrOrThrow(left.Data);
+        var stepDelta = differenceInData.ArrayDivide(intervalDistance);
+
+        var interpolatedData = left.Data.ArraySummOrThrow(stepDelta.ArrayMultiply(distanceToTarget));
+        return new NumberDataItem(target, interpolatedData);
+    }
+
+    }

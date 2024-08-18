@@ -15,9 +15,9 @@ namespace Dil.Core.Entities
         public Distance Distance { get; }
         public double[] Data { get; }
 
-        public static NumberDataItem ParseOrThrow(string s)
+        public static NumberDataItem ParseOrThrow(string s, string separator = "\t")
         {
-            var splitted = s.Split( new []{'\t'}, StringSplitOptions.RemoveEmptyEntries);
+            var splitted = s.Split( new []{separator}, StringSplitOptions.RemoveEmptyEntries);
             if(splitted.Length<3)
                 throw new InvalidDataException("Количество элементов в строке недостаточно");
             if(!int.TryParse(splitted[0], out int km))

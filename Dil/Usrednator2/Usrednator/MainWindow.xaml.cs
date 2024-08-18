@@ -64,11 +64,11 @@ public partial class MainWindow : Window
             var useZeroPivots = zeroPivotChbx.IsChecked ==true;
 
             if (useZeroPivots)
-                Helper.SetZeroPivot(_entries, averageMeters);
+                UsrednatorLogic.SetZeroPivot(_entries, averageMeters);
 
-            var resultText  = await Task.Run(()=> Helper.ConvertTableToFormatedText(_entries));
-            _results        = await Task.Run(()=> Helper.AverageFilterSync(_entries, averageMeters, useZeroPivots));
-            var filtredText = await Task.Run(()=> Helper.ConvertTableToFormatedText(_results));
+            var resultText  = await Task.Run(()=> UsrednatorLogic.ConvertTableToFormatedText(_entries));
+            _results        = await Task.Run(()=> UsrednatorLogic.AverageFilter(_entries, averageMeters, useZeroPivots));
+            var filtredText = await Task.Run(()=> UsrednatorLogic.ConvertTableToFormatedText(_results));
 
             TableTxt.Text = resultText;
             ResultTxt.Text = filtredText;
@@ -102,13 +102,8 @@ public partial class MainWindow : Window
             MessageBox.Show("Нету данных для копирования");
         else
         {
-            var filtredText = new StringBuilder();
-            foreach (var entry in _results)
-            {
-                filtredText.AppendLine($"{entry.Distance.Km}\t{entry.Distance.M}\t{string.Join("\t", entry.Data.Select(d => d.ToString("F2")))}");
-            }
-
-            Clipboard.SetText(filtredText.ToString());
+            var output = _results.ToFormattedString();
+            Clipboard.SetText(output);
             MessageBox.Show("Результаты скопированны в буффер. Вставьте их в таблицу Excel или текстовый файл");
         }
 
