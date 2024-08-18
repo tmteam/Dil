@@ -6,6 +6,7 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
+        <AssemblyName>Usrednator-Interpolator</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

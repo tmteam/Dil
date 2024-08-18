@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Icon="{x:Null}"
         WindowStyle="ToolWindow"
-        Title="Усреднятор"  Width="1000">
+        Title="Усреднятор-Интерполятор"  Width="1000">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -36,7 +36,7 @@
         <Label Grid.Row="3" Grid.Column="2" Name="resultLinesLbl"/>
 
         <Button Grid.Row ="4" Background="White"  Height="30" Grid.Column="2" HorizontalAlignment="Stretch" Name="CopyBtn" Click="CopyBtn_Click">Копировать результат в буфер обмена</Button>
-        <Label Grid.Row  ="4"  Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="7">Сделано в Непале</Label>
+        <Label Grid.Row  ="4"  Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="7">Сделано на Кипре</Label>
 
         <Label FontSize="48" 
                Grid.RowSpan="20" 

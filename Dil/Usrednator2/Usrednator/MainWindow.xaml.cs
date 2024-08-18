@@ -67,7 +67,7 @@ public partial class MainWindow : Window
                 UsrednatorLogic.SetZeroPivot(_entries, averageMeters);
 
             var resultText  = await Task.Run(()=> UsrednatorLogic.ConvertTableToFormatedText(_entries));
-            _results        = await Task.Run(()=> UsrednatorLogic.AverageFilter(_entries, averageMeters, useZeroPivots));
+            _results        = await Task.Run(()=> UsrednatorLogic.ApproximationFilter(_entries, averageMeters, useZeroPivots));
             var filtredText = await Task.Run(()=> UsrednatorLogic.ConvertTableToFormatedText(_results));
 
             TableTxt.Text = resultText;

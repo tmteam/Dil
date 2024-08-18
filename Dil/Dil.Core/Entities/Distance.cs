@@ -6,58 +6,53 @@ public readonly struct Distance
 {
     public Distance(int km, int m)
     {
-            Km = km;
-            M = m;
-        }
+        Km = km;
+        M = m;
+    }
 
     public static bool operator >(Distance left, Distance right)
     {
-            if (left.Km > right.Km)
-                return true;
-            if (left.Km < right.Km)
-                return false;
-            if (left.M > right.M)
-                return true;
-            if (left.M < right.M)
-                return false;
-            throw new InvalidOperationException();
-        }
+        if (left.Km > right.Km)
+            return true;
+        return left.Km * 1000 + left.M > right.Km * 1000 + right.M;
+
+    }
 
     public static bool operator <(Distance left, Distance right)
     {
-            if (left.Km < right.Km)
-                return true;
-            if (left.Km > right.Km)
-                return false;
-            if (left.M < right.M)
-                return true;
+        if (left.Km > right.Km )
             return false;
-        }
+        return left.Km * 1000 + left.M < right.Km * 1000 + right.M;
+
+        if (left.Km < right.Km)
+            return true;
+        if (left.Km > right.Km)
+            return false;
+        if (left.M < right.M)
+            return true;
+        return false;
+    }
 
     public static bool operator >=(Distance left, Distance right)
     {
-            if (left.Km < right.Km)
-                return false;
-            if (left.Km > right.Km)
-                return true;
-            return !(left.M < right.M);
-        }
+        if (left.Km > right.Km)
+            return true;
+        return left.Km * 1000 + left.M >= right.Km * 1000 + right.M;
+    }
 
     public static bool operator <=(Distance left, Distance right)
     {
-            if (left.Km > right.Km)
-                return false;
-            if (left.Km < right.Km)
-                return true;
-            return !(left.M > right.M);
-        }
+        if (left.Km > right.Km )
+            return false;
+        return left.Km * 1000 + left.M <= right.Km * 1000 + right.M;
+    }
 
-    public int DifferenceInMetters(Distance r) =>
-        (Km * 1000 + M) - (r.Km * 1000 + r.M);
+    public int DifferenceInMetters(Distance r, int metersInKm = 1000) =>
+        (Km * metersInKm + M) - (r.Km * metersInKm + r.M);
 
     public override bool Equals(object obj)
         => obj is Distance e && Km == e.Km && M == e.M;
-    
+
     public Distance AppendMeters(int meters)
         => new Distance(Km, M + meters);
 
@@ -68,6 +63,7 @@ public readonly struct Distance
         var addKm = M / 1000;
         return new Distance(Km + addKm, M % 1000);
     }
+
     public int Km { get; }
     public int M { get; }
 
@@ -76,10 +72,10 @@ public readonly struct Distance
 
     public Distance ConvertToNextKm(int nextKm, int lastMeterOfKm)
     {
-            if (nextKm <= Km)
-                throw new InvalidOperationException();
-            if (lastMeterOfKm > M)
-                return this;
-            return new Distance(nextKm, M - lastMeterOfKm);
-        }
+        if (nextKm <= Km)
+            throw new InvalidOperationException();
+        if (lastMeterOfKm > M)
+            return this;
+        return new Distance(nextKm, M - lastMeterOfKm);
+    }
 }

@@ -19,7 +19,7 @@ public static class Helper
     {
         if (origin.Length != addition.Length)
         {
-            if(displayRowNumber!=null)
+            if (displayRowNumber != null)
                 throw new InvalidDataException(
                     $"Количество данных в строке {displayRowNumber} отличается от строки {displayRowNumber - 1}");
             else
@@ -30,12 +30,12 @@ public static class Helper
         for (int j = 0; j < origin.Length; j++)
             origin[j] += addition[j];
     }
-    
+
     private static double[] ArraySubstrOrThrow(this double[] origin, double[] substr, int? displayRowNumber = null)
     {
         if (origin.Length != substr.Length)
         {
-            if(displayRowNumber!=null)
+            if (displayRowNumber != null)
                 throw new InvalidDataException(
                     $"Количество данных в строке {displayRowNumber} отличается от строки {displayRowNumber - 1}");
             else
@@ -44,17 +44,17 @@ public static class Helper
         }
 
         var result = new double[origin.Length];
-        
+
         for (int j = 0; j < origin.Length; j++)
             result[j] = origin[j] - substr[j];
         return result;
     }
-    
+
     private static double[] ArraySummOrThrow(this double[] origin, double[] b, int? displayRowNumber = null)
     {
         if (origin.Length != b.Length)
         {
-            if(displayRowNumber!=null)
+            if (displayRowNumber != null)
                 throw new InvalidDataException(
                     $"Количество данных в строке {displayRowNumber} отличается от строки {displayRowNumber - 1}");
             else
@@ -63,20 +63,20 @@ public static class Helper
         }
 
         var result = new double[origin.Length];
-        
+
         for (int j = 0; j < origin.Length; j++)
             result[j] = origin[j] + b[j];
         return result;
     }
-    
+
     private static double[] ArrayDivide(this double[] origin, double divider)
     {
         var result = new double[origin.Length];
         for (int j = 0; j < origin.Length; j++)
-            result[j] = origin[j] /divider;
+            result[j] = origin[j] / divider;
         return result;
     }
-    
+
     private static double[] ArrayMultiply(this double[] origin, double multiplier)
     {
         var result = new double[origin.Length];
@@ -84,11 +84,23 @@ public static class Helper
             result[j] = origin[j] * multiplier;
         return result;
     }
-    
-    public static NumberDataItem Interpolate(NumberDataItem left, NumberDataItem right, Distance target)
+
+    public static NumberDataItem Interpolate(NumberDataItem left, NumberDataItem right, Distance target, int? mInKm = null)
     {
-        var intervalDistance = right.Distance.DifferenceInMetters(left.Distance);
-        var distanceToTarget = target.DifferenceInMetters(left.Distance);
+        if (left.Distance.Equals(right.Distance))
+        {
+            if (right.Distance.Equals(target))
+                return new NumberDataItem(target, left.Data.ArraySummOrThrow(right.Data).ArrayDivide(2));
+            else
+                throw new Exception("Фатальная ошибка интерполяции с нулевым интервалом");
+        }
+
+        if (mInKm == null)
+        {
+            mInKm = Math.Max(left.Distance.M, 1000);
+        }
+        var intervalDistance = right.Distance.DifferenceInMetters(left.Distance, mInKm.Value);
+        var distanceToTarget = target.DifferenceInMetters(left.Distance, mInKm.Value);
 
         var differenceInData = right.Data.ArraySubstrOrThrow(left.Data);
         var stepDelta = differenceInData.ArrayDivide(intervalDistance);
@@ -97,4 +109,4 @@ public static class Helper
         return new NumberDataItem(target, interpolatedData);
     }
 
-    }
+}

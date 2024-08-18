@@ -15,7 +15,7 @@ public static class UsrednatorLogic
          *  а напротив введенного километра стоит 1 или 2 метра нулю нужно присвоить значение
          *  предыдущей строки (примыкающей к столбу).
          *
-         *  Если длина участка суммирования перед новым столбом будет меньше, примерно,
+         *  Если длина участка суммирования перед новым столбом будет меньше,
          *  двух третей установленной оператором длины участка суммирования,
          *  этот кусок приобщается к предыдущему участку, который усредняется с большим количеством метров,
          *  чем установлено в программе обработки.
@@ -44,8 +44,8 @@ public static class UsrednatorLogic
         }
 
     }
-    
-    public static LinkedList<NumberDataItem> AverageFilter(
+    //Этот фильтр использовался раньше. Когда усреднятор был усреднятором а не аппроксиматором
+    public static LinkedList<NumberDataItem> AverageFilterOld(
         IEnumerable<NumberDataItem> origin, int averageMetters, bool useZeroPivots)
     {
         var answer = new LinkedList<NumberDataItem>();
@@ -153,134 +153,76 @@ public static class UsrednatorLogic
         }
         return answer;
     }
+    
+    
+     public static LinkedList<NumberDataItem> ApproximationFilter(
+        IEnumerable<NumberDataItem> origin, int averageMetters, bool useZeroPivots)
+    {
+        var answer = new LinkedList<NumberDataItem>();
+        if (!origin.Any())
+            return answer;
+        
+        var startOfCurrentInterval = origin.First().Distance;
+        var currentCalculatedDistance = startOfCurrentInterval;
+            
+        var buffer = new LinkedList<NumberDataItem>();
+        Distance? prepreviousDistance = null; 
+        var previousItem = origin.First();
+        foreach (var currentOrigin in origin.Skip(1))
+        {
+            //Нужно заполнить [current.Distance.. endOfCurrentInterval] интерполированными значениями
+            while (currentOrigin.Distance >= currentCalculatedDistance)
+            {
+                var metersInLastKilometer = 1000;
 
-    // public static LinkedList<NumberDataItem> AverageFilter2(
-    //     IEnumerable<NumberDataItem> origin, int averageMetters, bool useZeroPivots)
-    // {
-    //     var answer = new LinkedList<NumberDataItem>();
-    //     if (!origin.Any())
-    //         return answer;
-    //     
-    //     var startOfCurrentInterval = origin.First().Distance;
-    //     var endOfCurrentInterval = startOfCurrentInterval.AppendMeters(averageMetters);
-    //         
-    //     var buffer = new LinkedList<NumberDataItem>();
-    //     var previousBuffer = new LinkedList<NumberDataItem>();
-    //     int currentKm = startOfCurrentInterval.Km;
-    //     int lastMeterInterval = averageMetters;
-    //     
-    //     var previousItem = origin.First();
-    //     
-    //     foreach(var nextItem in origin.Skip(1))
-    //     {
-    //         var differenceInMetters = nextItem.Distance.DifferenceInMetters(previousItem.Distance);
-    //         var differenceInData = nextItem.Data.ArraySubstrOrThrow(previousItem.Data);
-    //         var stepDelta = differenceInData.ArrayDivide(differenceInMetters);
-    //         
-    //         for (var i = 0; i < differenceInMetters; i++)
-    //         {
-    //             var stepData = previousItem.Data.ArraySummOrThrow(differenceInData.ArrayMultiply(i));
-    //             
-    //         }
-    //         Dictionary<int, DataItem> approximations
-    //         
-    //     }
-    //     
-    //     int bufferStartIndex = 0;
-    //     
-    //     int i = -1;
-    //     
-    //     var previousDistance = new Distance();
-    //     var prePreviousDistance = new Distance();
-    //         
-    //     foreach (var current in origin)
-    //     {
-    //         i++;
-    //         if (current.Distance.Km > currentKm)
-    //         {
-    //             #region Обработка перехода на другой киллометр
-    //
-    //             currentKm = current.Distance.Km;
-    //
-    //             if (i > 1)
-    //             {
-    //                 //Если две последних записи в одном километре - то можем скорректироваться по ним
-    //                 if (prePreviousDistance.Km == previousDistance.Km)
-    //                 {
-    //                     lastMeterInterval = previousDistance.M - prePreviousDistance.M;
-    //                 }
-    //
-    //                 //Если нужна привязка к нулевому метру киллометра
-    //                 if (useZeroPivots)
-    //                 {
-    //                     endOfCurrentInterval = new Distance(current.Distance.Km, 0);
-    //                         
-    //                     /*
-    //                      *  Если длина участка суммирования перед новым столбом < 0.66*averageMeters,
-    //                      *  то этот кусок приобщается к предыдущему участку,
-    //                      *  который усредняется с большим количеством метров,
-    //                      *  чем установлено в программе обработки.
-    //                      *
-    //                      * Если участок суммирования, примыкающий к километровому столбу, будет больше 2 / 3 { averageMeters},
-    //                      * то он усредняется по фактической длине.
-    //                      */
-    //                     if (lastMeterInterval < averageMetters * 0.66 && answer.Any())
-    //                     {
-    //                         //Сливаем два буфера
-    //                         foreach (var entry in previousBuffer)
-    //                             buffer.AddFirst(entry);
-    //                         previousBuffer.Clear();
-    //
-    //                         //Отменяем последнее значение. Его нужно посчитать заново
-    //                         startOfCurrentInterval = answer.Last().Distance;
-    //                         answer.RemoveLast();
-    //                     }
-    //
-    //                 }
-    //                 else
-    //                 {
-    //                     //Предполагаемая длина километра
-    //                     var lastMeterOfKm = previousDistance.M + lastMeterInterval;
-    //                     //Корректируем концовку интервала
-    //                     endOfCurrentInterval = endOfCurrentInterval.ConvertToNextKm(current.Distance.Km, lastMeterOfKm);
-    //                 }
-    //             }
-    //             #endregion
-    //         }
-    //         
-    //         if (current.Distance >= endOfCurrentInterval)
-    //         {
-    //             //Нужно заполнить [current.Distance.. endOfCurrentInterval] интерполированными значениями
-    //             #region Обработка полученного интервала
-    //             if (buffer.Any())
-    //             {
-    //                 var resultData = new double[buffer.First().Data.Length];
-    //                 int j = -1;
-    //                 foreach (var entry in buffer)
-    //                 {
-    //                     j++;
-    //                     resultData.ArrayInplaceSummOrThrow(entry.Data, bufferStartIndex + j);
-    //                 }
-    //
-    //                 answer.AddLast(new NumberDataItem(startOfCurrentInterval, resultData.Select(r => r / buffer.Count).ToArray()));
-    //                 previousBuffer = buffer;
-    //                 buffer = new LinkedList<NumberDataItem>();
-    //             }
-    //             bufferStartIndex = i;
-    //             startOfCurrentInterval = endOfCurrentInterval;
-    //             endOfCurrentInterval = endOfCurrentInterval.AppendMeters(averageMetters);
-    //             #endregion
-    //         }
-    //
-    //         if (current.Distance < endOfCurrentInterval)
-    //             buffer.AddLast(current);
-    //
-    //         prePreviousDistance = previousDistance;
-    //         previousDistance = current.Distance;
-    //
-    //     }
-    //     return answer;
-    // }
+                if (currentOrigin.Distance.Km > currentCalculatedDistance.Km && currentCalculatedDistance.M >= 1000)
+                {
+                    //Следующая рассчитанная точка вылезла за 1000 м. Это ожидаемо, ведь мы тупо прибавили интервал к ней
+                    // В километре может быть больше 1000 метров
+                    if (previousItem.Distance.M > 1000)
+                    {
+                        if (prepreviousDistance.HasValue && prepreviousDistance.Value.Km == previousItem.Distance.Km)
+                            //Предполагаемая длина километра. Возьмем разницу между последними отсчетами
+                            metersInLastKilometer = previousItem.Distance.M +
+                                                    (previousItem.Distance.M - prepreviousDistance.Value.M);
+                        else
+                            metersInLastKilometer = previousItem.Distance.M;
+                    }
+
+                    //надо пересчитать currentCalculatedDistance
+                    if (useZeroPivots)
+                    {
+                        currentCalculatedDistance = new Distance(currentOrigin.Distance.Km, 0);
+                    }
+                    else
+                        currentCalculatedDistance =
+                            currentCalculatedDistance.ConvertToNextKm(currentOrigin.Distance.Km,
+                                metersInLastKilometer);
+
+                    if (currentOrigin.Distance < currentCalculatedDistance)
+                        break;
+                }
+
+                var interpolated = 
+                    Helper.Interpolate(previousItem, currentOrigin, currentCalculatedDistance, metersInLastKilometer);
+                answer.AddLast(interpolated);
+                currentCalculatedDistance =
+                    currentCalculatedDistance.AppendMeters(averageMetters);
+
+               
+
+                buffer = new LinkedList<NumberDataItem>();
+            }
+            
+            if (currentOrigin.Distance < currentCalculatedDistance)
+                buffer.AddLast(currentOrigin);
+            prepreviousDistance = previousItem.Distance;
+            previousItem = currentOrigin;
+        }
+        
+        return answer;
+    }
+
     
     public static string ConvertTableToFormatedText(IEnumerable<NumberDataItem> data)
     {
