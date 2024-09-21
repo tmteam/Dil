@@ -69,11 +69,14 @@ public static class Helper
         return result;
     }
 
-    private static double[] ArrayDivide(this double[] origin, double divider)
+    public static double[] ArrayDivide(this double[] origin, double divider)
     {
         var result = new double[origin.Length];
         for (int j = 0; j < origin.Length; j++)
             result[j] = origin[j] / divider;
+        if (divider == 0)
+            throw new Exception("Zero divider");
+                
         return result;
     }
 

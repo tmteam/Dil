@@ -153,10 +153,132 @@ public static class UsrednatorLogic
         }
         return answer;
     }
+
+    private static LinkedList<NumberDataItem> Deduplication(IEnumerable<NumberDataItem> origin)
+    {
+        var result = new LinkedList<NumberDataItem>();
+        var current = origin.First();
+        var acc = current.Data;
+        var countOfSame = 1;
+        //Написано ужасно но зато работает
+        foreach (var value in origin.Skip(1))
+        {
+            if (Equals(value.Distance, current.Distance))
+            {
+                acc.ArrayInplaceSummOrThrow(value.Data);
+                countOfSame++;
+            }
+            else
+            {
+                result.AddLast(new NumberDataItem(current.Distance, acc.ArrayDivide(countOfSame)));
+                countOfSame = 1;
+                acc = value.Data;
+                current = value;
+               
+            }
+            
+            if (value == origin.Last()) 
+                result.AddLast(new NumberDataItem(current.Distance, acc.ArrayDivide(countOfSame)));
+        }
+
+        return result;
+    }
+
+    private static LinkedList<NumberDataItem> RemoveKilometerTails(IEnumerable<NumberDataItem> origin)
+    {
+        var result = new LinkedList<NumberDataItem>();
+        var array = origin.ToArray();
+        var i = 0;
+        while (i < array.Length)
+        {
+            var current = array[i];
+            //Специальный случай когда участок начинается с большого числа
+            if (current.Distance.M >= 1000)
+            {
+                i++;
+                continue;
+            }
+            var count = 1;
+            var acc = array[i].Data;
+
+            if (i < array.Length -1)
+            {
+                var next = array[i + 1];
+                while (next.Distance.M >= 1000)
+                {
+                    acc.ArrayInplaceSummOrThrow(next.Data);
+                    count++;
+                    if (i + count >= array.Length)
+                        break;
+                    next = array[i + count];
+                }
+            }
+            result.AddLast(new NumberDataItem(current.Distance, acc.ArrayDivide(count)));
+            i = i + count ;
+        }
+
+        return result;
+    }
+
     
-    
-     public static LinkedList<NumberDataItem> ApproximationFilter(
+    public static LinkedList<NumberDataItem> ApproximationFilter(
         IEnumerable<NumberDataItem> origin, int averageMetters, bool useZeroPivots)
+    {
+        var answer = new LinkedList<NumberDataItem>();
+        if (!origin.Any())
+            return answer;
+        var deduplicated = Deduplication(origin);
+        if (useZeroPivots)
+            deduplicated = RemoveKilometerTails(deduplicated);
+        
+        //В начале интерполируем все по одному метру
+        var interpolatedByMeter = OneMeterInterpolation(deduplicated);
+        //Теперь считаем среднее по отрезку
+        if (averageMetters <= 1)
+            return interpolatedByMeter;
+        var interpolatedAsArray = interpolatedByMeter.ToArray();
+        var current = interpolatedByMeter.First;
+        while (current != null)
+        {
+            var startPoint = current.Value.Distance;
+            var nextPoint = current.Value.Distance.AppendMeters(averageMetters);
+            if (nextPoint.M > 1000)
+            {
+                if (useZeroPivots)
+                {
+                    nextPoint = new Distance(nextPoint.Km + 1, 0);
+                }
+                else
+                {
+                    // Корректируем киллометраж на границе километров
+                    var lastMInKm = interpolatedAsArray
+                        .Where(a => a.Distance.Km == current.Value.Distance.Km)
+                        .Max(x => x.Distance.M);
+                    if (lastMInKm < 1000)
+                        nextPoint = nextPoint.ConvertToNextKm(nextPoint.Km + 1, 1000);
+                }
+            }
+
+            var acc = new double[current.Value.Data.Length];
+            var itemCount = 0;
+            while (current != null && current.Value.Distance < nextPoint)
+            {
+                acc.ArrayInplaceSummOrThrow(current.Value.Data);
+                itemCount++;
+                current = current.Next;
+            }
+
+            if (itemCount != 0)
+            {
+                var averageData = acc.ArrayDivide(itemCount);
+                answer.AddLast(new NumberDataItem(startPoint, averageData.ToArray()));
+            }
+        }
+
+        return answer;
+    }
+
+    private static LinkedList<NumberDataItem> OneMeterInterpolation(IEnumerable<NumberDataItem> origin)
     {
         var answer = new LinkedList<NumberDataItem>();
         if (!origin.Any())
@@ -188,16 +310,10 @@ public static class UsrednatorLogic
                         else
                             metersInLastKilometer = previousItem.Distance.M;
                     }
-
-                    //надо пересчитать currentCalculatedDistance
-                    if (useZeroPivots)
-                    {
-                        currentCalculatedDistance = new Distance(currentOrigin.Distance.Km, 0);
-                    }
-                    else
-                        currentCalculatedDistance =
-                            currentCalculatedDistance.ConvertToNextKm(currentOrigin.Distance.Km,
-                                metersInLastKilometer);
+                   
+                    currentCalculatedDistance =
+                        currentCalculatedDistance.ConvertToNextKm(currentOrigin.Distance.Km,
+                            metersInLastKilometer);
 
                     if (currentOrigin.Distance < currentCalculatedDistance)
                         break;
@@ -206,11 +322,7 @@ public static class UsrednatorLogic
                 var interpolated = 
                     Helper.Interpolate(previousItem, currentOrigin, currentCalculatedDistance, metersInLastKilometer);
                 answer.AddLast(interpolated);
-                currentCalculatedDistance =
-                    currentCalculatedDistance.AppendMeters(averageMetters);
-
-               
-
+                currentCalculatedDistance = currentCalculatedDistance.AppendMeters(1);
                 buffer = new LinkedList<NumberDataItem>();
             }
             
@@ -222,7 +334,6 @@ public static class UsrednatorLogic
         
         return answer;
     }
-
     
     public static string ConvertTableToFormatedText(IEnumerable<NumberDataItem> data)
     {

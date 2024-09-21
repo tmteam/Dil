@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Icon="{x:Null}"
         WindowStyle="ToolWindow"
-        Title="Усреднятор-Интерполятор"  Width="1000">
+        Title="Минтер. Метровый Интерполятор. Версия 3"  Width="1000">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
