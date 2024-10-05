@@ -173,8 +173,8 @@ public class AverageFilterWithPivotTest
         var formated = average.ToFormattedString(" ");
         Assert.AreEqual(
             """
-            5 1004 47440,95
-            6 0 100280,33
+            5 1004 4250,82
+            6 0 10028,26
             6 4 6,00
 
             """,
@@ -204,7 +204,7 @@ public class AverageFilterWithPivotTest
             13 800 8,49 0,00
             13 900 9,50 0,00
             13 1000 10,99 0,00
-            13 1100 12,50 0,00
+            13 1100 12,00 0,00
             14 0 13,49 0,00
             14 100 14,00 0,00
 

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Windows.Documents;
 using Dil.Core.Entities;
 
 namespace Usrednator;
@@ -220,9 +221,11 @@ public static class UsrednatorLogic
         return result;
     }
 
-    
     public static LinkedList<NumberDataItem> ApproximationFilter(
-        IEnumerable<NumberDataItem> origin, int averageMetters, bool useZeroPivots)
+        IEnumerable<NumberDataItem> origin,
+        int averageMetters,
+        bool useZeroPivots,
+        bool useNextIntervalStart = false)
     {
         var answer = new LinkedList<NumberDataItem>();
         if (!origin.Any())
@@ -232,7 +235,80 @@ public static class UsrednatorLogic
             deduplicated = RemoveKilometerTails(deduplicated);
         
         //В начале интерполируем все по одному метру
-        var interpolatedByMeter = OneMeterInterpolation(deduplicated);
+        var interpolatedByMeter = OneMeterInterpolation(deduplicated.ToArray());
+        //высчитываем дистанции 
+        var distances = CalculateIntervals(origin.Select(o => o.Distance).ToArray(), averageMetters, useZeroPivots);
+        var lastDistance = interpolatedByMeter.Last();
+        if (distances.Last() <= lastDistance.Distance)
+        {
+            //Идея в том, что если последняя дистанция - последняя, то нужно использовать ее значение как финальное
+            distances.Add(lastDistance.Distance);
+        }
+        var currentValue = interpolatedByMeter.First;
+        for (int i = 1; i < distances.Count; i++)
+        {
+            var start = distances[i - 1];
+            var end = distances[i];
+            var startLeaf = currentValue.ThisOrFirstOrDefault((x) => x.Value.Distance.Equals(start));
+            
+            var leaf = startLeaf.Next;
+            var acc = startLeaf.Value.Data;
+            var count = 1;
+            while (leaf!=null )
+            {
+                if(useNextIntervalStart || i == distances.Count -1)
+                {
+                    if (leaf.Value.Distance.Km>=end.Km && leaf.Value.Distance>end) 
+                        break;
+                }
+                else
+                {
+                    if (leaf.Value.Distance.Km>=end.Km && leaf.Value.Distance>=end) 
+                        break;
+                }
+                acc.ArrayInplaceSummOrThrow(leaf.Value.Data);
+                count++;
+
+                leaf = leaf.Next;
+            }
+            
+            Console.WriteLine($"Handled: {start}-{end} for {count} items");
+            answer.AddLast(new NumberDataItem(start, acc.ArrayDivide(count)));
+        }
+
+        return answer;
+    }
+
+    private static LinkedListNode<T> ThisOrFirstOrDefault<T>(this LinkedListNode<T> leaf,
+        Func<LinkedListNode<T>, bool> predicate)
+    {
+        
+        while (leaf!=null)
+        {
+            if (predicate(leaf))
+                return leaf;
+            leaf = leaf.Next;
+        }
+
+        return null;
+    }
+    
+    public static LinkedList<NumberDataItem> ApproximationFilter_0(
+        IEnumerable<NumberDataItem> origin, 
+        int averageMetters, 
+        bool useZeroPivots, 
+        bool useNextIntervalStart= false)
+    {
+        //todo implement useNextIntervalStart
+        var answer = new LinkedList<NumberDataItem>();
+        if (!origin.Any())
+            return answer;
+        var deduplicated = Deduplication(origin);
+        if (useZeroPivots)
+            deduplicated = RemoveKilometerTails(deduplicated);
+        
+        //В начале интерполируем все по одному метру
+        var interpolatedByMeter = OneMeterInterpolation(deduplicated.ToArray());
         //Теперь считаем среднее по отрезку
         if (averageMetters <= 1)
             return interpolatedByMeter;
@@ -277,8 +353,73 @@ public static class UsrednatorLogic
 
         return answer;
     }
+    /// <summary>
+    /// Вычисляет отрезки для усреднятора
+    /// </summary>
+    public static List<Distance> CalculateIntervals(Distance[] distances, int step, bool useZeoPivots)
+    {
+        var answer = new List<Distance>();
+        var current = distances.FirstOrDefault();
+        var lastKm = distances.Max(d => d.Km);
+        var currentKm = current.Km;
+        var startMeter = current.M;
+        for (; currentKm <= lastKm; currentKm++)
+        {
+            var lastMeters = distances
+                .Where(d => d.Km == currentKm)
+                .DistinctBy(d=>d.M)
+                .TakeLast(2);
+            
+            var originLastMInCurrentKm = lastMeters.LastOrDefault().M;
+            var preLastM = lastMeters.FirstOrDefault().M;
+            if (lastMeters.Count() < 2)
+                preLastM = 0;
+            var calculatedLastMInCurrentKm = originLastMInCurrentKm;
+            
+            if (originLastMInCurrentKm <= 1000 && currentKm<lastKm)
+            {
+               //Если длина участка суммирования перед новым столбом < 0.66*averageMeters,
+               if (999 - calculatedLastMInCurrentKm < 0.66 * step 
+                   // Если длинна участка с предыдущим
+                   || 999 - calculatedLastMInCurrentKm<= originLastMInCurrentKm - preLastM
+                   // или все по нулям 
+                   || ( currentKm<lastKm && calculatedLastMInCurrentKm ==0 && preLastM ==0) 
+                   )
+                   calculatedLastMInCurrentKm = 999;
+            }
 
-    private static LinkedList<NumberDataItem> OneMeterInterpolation(IEnumerable<NumberDataItem> origin)
+            var currentM = startMeter;
+            if (useZeoPivots)
+            {
+                currentM = (Enumerable.Range(0, 1000).FirstOrDefault(x => x >= startMeter));
+            }
+
+            //Заполняем интервалами ответ до последнего метра
+            do
+            {
+                var newDistance = new Distance(currentKm, currentM);
+                answer.Add(newDistance);
+                currentM += step;
+            } while (currentM <= calculatedLastMInCurrentKm);
+            
+            if (useZeoPivots)
+            {
+                startMeter = 0;
+            }
+            else if (originLastMInCurrentKm < 1000 && currentM  > 1000)
+            {
+                startMeter = (currentM) % 1000;
+            }
+            else
+            {
+                startMeter = 0;
+            }
+        }
+
+        return answer;
+    }
+    
+    private static LinkedList<NumberDataItem> OneMeterInterpolationOld(IEnumerable<NumberDataItem> origin)
     {
         var answer = new LinkedList<NumberDataItem>();
         if (!origin.Any())
@@ -287,7 +428,6 @@ public static class UsrednatorLogic
         var startOfCurrentInterval = origin.First().Distance;
         var currentCalculatedDistance = startOfCurrentInterval;
             
-        var buffer = new LinkedList<NumberDataItem>();
         Distance? prepreviousDistance = null; 
         var previousItem = origin.First();
         foreach (var currentOrigin in origin.Skip(1))
@@ -297,43 +437,97 @@ public static class UsrednatorLogic
             {
                 var metersInLastKilometer = 1000;
 
-                if (currentOrigin.Distance.Km > currentCalculatedDistance.Km && currentCalculatedDistance.M >= 1000)
+                if (currentOrigin.Distance.Km > currentCalculatedDistance.Km)
                 {
-                    //Следующая рассчитанная точка вылезла за 1000 м. Это ожидаемо, ведь мы тупо прибавили интервал к ней
-                    // В километре может быть больше 1000 метров
-                    if (previousItem.Distance.M > 1000)
+                    //Обработка неровных километров
+                    if (currentCalculatedDistance.M >= 1000)
                     {
-                        if (prepreviousDistance.HasValue && prepreviousDistance.Value.Km == previousItem.Distance.Km)
-                            //Предполагаемая длина километра. Возьмем разницу между последними отсчетами
-                            metersInLastKilometer = previousItem.Distance.M +
-                                                    (previousItem.Distance.M - prepreviousDistance.Value.M);
-                        else
-                            metersInLastKilometer = previousItem.Distance.M;
-                    }
-                   
-                    currentCalculatedDistance =
-                        currentCalculatedDistance.ConvertToNextKm(currentOrigin.Distance.Km,
-                            metersInLastKilometer);
+                        //Следующая рассчитанная точка вылезла за 1000 м. Это ожидаемо, ведь мы тупо прибавили интервал к ней
+                        // В километре может быть больше 1000 метров
+                        if (previousItem.Distance.M > 1000)
+                        {
+                            if (prepreviousDistance.HasValue &&
+                                prepreviousDistance.Value.Km == previousItem.Distance.Km)
+                                //Предполагаемая длина километра. Возьмем разницу между последними отсчетами
+                                metersInLastKilometer = previousItem.Distance.M +
+                                                        (previousItem.Distance.M - prepreviousDistance.Value.M);
+                            else
+                                metersInLastKilometer = previousItem.Distance.M;
+                        }
 
-                    if (currentOrigin.Distance < currentCalculatedDistance)
-                        break;
+                        currentCalculatedDistance =
+                            currentCalculatedDistance.ConvertToNextKm(currentOrigin.Distance.Km,
+                                metersInLastKilometer);
+
+                        if (currentOrigin.Distance < currentCalculatedDistance)
+                            break;
+                    }
                 }
 
                 var interpolated = 
                     Helper.Interpolate(previousItem, currentOrigin, currentCalculatedDistance, metersInLastKilometer);
                 answer.AddLast(interpolated);
                 currentCalculatedDistance = currentCalculatedDistance.AppendMeters(1);
-                buffer = new LinkedList<NumberDataItem>();
             }
             
-            if (currentOrigin.Distance < currentCalculatedDistance)
-                buffer.AddLast(currentOrigin);
             prepreviousDistance = previousItem.Distance;
             previousItem = currentOrigin;
         }
         
         return answer;
     }
+    
+    public static LinkedList<NumberDataItem> OneMeterInterpolation(NumberDataItem[] origin)
+    {
+        var answer = new LinkedList<NumberDataItem>();
+        if (!origin.Any())
+            return answer;
+        answer.AddLast(origin[0]);
+        for (int i = 1; i < origin.Length; i++)
+        {
+            var previousItem = origin[i-1];
+            var currentItem = origin[i];
+            //var nextItem = (i >= origin.Length - 1) ? null : origin[i + 1];
+            if (previousItem.Distance.Km < currentItem.Distance.Km)
+            {
+                    //Дозаполняем километр
+                    // От конца до 1000
+                    for (var m = previousItem.Distance.M+1; m < 1000; m++)
+                    {
+                        var interpolated =
+                            Helper.Interpolate(
+                                previousItem, currentItem,
+                                new Distance(previousItem.Distance.Km, m), 1000);
+                        answer.AddLast(interpolated);
+                    }
+                    //от начала до currentItem
+                    for (var m = 0; m < currentItem.Distance.M; m++)
+                    {
+                        var interpolated =
+                            Helper.Interpolate(
+                                previousItem, currentItem,
+                                new Distance(currentItem.Distance.Km, m), Math.Max(1000, previousItem.Distance.M+1));
+                        answer.AddLast(interpolated);
+                    }
+                    
+            }
+            else
+            {
+                //Считаем интерполяцию по метрам
+                for (var m = previousItem.Distance.M+1; m < currentItem.Distance.M; m++)
+                {
+                    var interpolated =
+                        Helper.Interpolate(
+                            previousItem, currentItem,
+                            new Distance(previousItem.Distance.Km, m), 1000);
+                    answer.AddLast(interpolated);
+                }
+            }
+            answer.AddLast(currentItem);
+        }
+        return answer;
+    }
+    
     
     public static string ConvertTableToFormatedText(IEnumerable<NumberDataItem> data)
     {

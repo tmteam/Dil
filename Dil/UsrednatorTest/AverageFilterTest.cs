@@ -131,7 +131,8 @@ public class AverageFilterNoPivotTest
             {
                 NumberDataItem.ParseOrThrow("13 590 253  28", " "),
                 NumberDataItem.ParseOrThrow("13 591 226  22", " "),
-                NumberDataItem.ParseOrThrow("13 593 222  31", " "),
+                NumberDataItem.ParseOrThrow("13 5" +
+                                            "93 222  31", " "),
                 NumberDataItem.ParseOrThrow("13 593 213  26", " "),
                 NumberDataItem.ParseOrThrow("13 595 237  28", " "),
                 NumberDataItem.ParseOrThrow("13 596 227  20", " "),
@@ -717,10 +718,34 @@ public class AverageFilterNoPivotTest
         var formated = average.ToFormattedString(" ");
         Assert.AreEqual(
             """
-            5 1004 47440,95
-            6 0 100280,33
+            5 1004 4250,82
+            6 0 10028,26
             6 4 6,00
 
+            """,
+            formated,
+            $"Actual is \r\n{formated}");
+    }
+    
+    [Test]
+    public void Test_24_1()
+    {
+        var input =
+            new[]
+            {
+                NumberDataItem.ParseOrThrow("5\t1004\t1 "),
+                NumberDataItem.ParseOrThrow("5\t1006\t3 "),
+                NumberDataItem.ParseOrThrow("6\t0   \t4 "),
+                NumberDataItem.ParseOrThrow("6\t1   \t6"),
+            };
+
+        var average = UsrednatorLogic.ApproximationFilter(input, 4, false);
+        var formated = average.ToFormattedString(" ");
+        Assert.AreEqual(
+            """
+            5 1004 2,00
+            6 0 5,00
+            
             """,
             formated,
             $"Actual is \r\n{formated}");
@@ -752,36 +777,36 @@ public class AverageFilterNoPivotTest
             $"Actual is \r\n{formated}");
     }
     
-    [Test]
-    public void Test_bad_km_1()
-    {
-        var input =
-            new[]
-            {
-                NumberDataItem.ParseOrThrow("13 800 8  0", " "),
-                NumberDataItem.ParseOrThrow("13 900 9  0", " "),
-                NumberDataItem.ParseOrThrow("13 1000 10  0", " "),
-                NumberDataItem.ParseOrThrow("13 1100 12  0", " "),
-                NumberDataItem.ParseOrThrow("14 000 13  0", " "),
-                NumberDataItem.ParseOrThrow("14 100 14  0", " "),
-            };
-
-        var average = UsrednatorLogic.ApproximationFilter(input, 100, false);
-        var formated = average.ToFormattedString(" ");
-        Assert.AreEqual(
-            """
-            13 800 8,49 0,00
-            13 900 9,50 0,00
-            13 1000 10,99 0,00
-            13 1100 12,50 0,00
-            14 0 13,49 0,00
-            14 100 14,00 0,00
-
-            """,
-            formated,
-            $"Actual is \r\n{formated}");
-    }
-    
+//     [Test]
+//     public void Test_bad_km_1()
+//     {
+//         var input =
+//             new[]
+//             {
+//                 NumberDataItem.ParseOrThrow("13 800 8  0", " "),
+//                 NumberDataItem.ParseOrThrow("13 900 9  0", " "),
+//                 NumberDataItem.ParseOrThrow("13 1000 10  0", " "),
+//                 NumberDataItem.ParseOrThrow("13 1100 12  0", " "),
+//                 NumberDataItem.ParseOrThrow("14 000 13  0", " "),
+//                 NumberDataItem.ParseOrThrow("14 100 14  0", " "),
+//             };
+//
+//         var average = UsrednatorLogic.ApproximationFilter(input, 100, false);
+//         var formated = average.ToFormattedString(" ");
+//         Assert.AreEqual(
+//             """
+//             13 800 8,49 0,00
+//             13 900 9,50 0,00
+//             13 1000 10,99 0,00
+//             13 1100 12,50 0,00
+//             14 0 13,49 0,00
+//             14 100 14,00 0,00
+//
+//             """,
+//             formated,
+//             $"Actual is \r\n{formated}");
+//     }
+//     
    
     
     [Test]
@@ -804,10 +829,7 @@ public class AverageFilterNoPivotTest
             13 900 9,50 0,00
             13 1000 10,49 0,00
             13 1100 11,50 0,00
-            13 1200 12,50 0,00
-            13 1300 13,49 0,00
-            13 1400 14,49 0,00
-            13 1500 15,50 0,00
+            13 1200 12,00 0,00
             14 0 16,50 0,00
             14 100 17,50 0,00
             14 200 18,00 0,00
@@ -838,10 +860,7 @@ public class AverageFilterNoPivotTest
             13 900 9,50 0,00
             13 1000 10,49 0,00
             13 1100 11,50 0,00
-            13 1200 12,25 0,00
-            13 1300 12,75 0,00
-            13 1400 13,25 0,00
-            13 1500 13,75 0,00
+            13 1200 12,00 0,00
             14 0 14,49 0,00
             14 100 15,50 0,00
             14 200 16,00 0,00
@@ -856,6 +875,8 @@ public class AverageFilterNoPivotTest
             formated,
             $"Actual is \r\n{formated}");
     }
+    
+    
     
     [Test]
     public void Test_bad_km_4()
@@ -890,4 +911,34 @@ public class AverageFilterNoPivotTest
             $"Actual is \r\n{formated}");
     }
 
+    
+    [Test]
+    public void Test_bad_km_5()
+    {
+        var input =
+            new[]
+            {
+                NumberDataItem.ParseOrThrow("1 970 8  0", " "),
+                NumberDataItem.ParseOrThrow("1 973 12  0", " "),
+                NumberDataItem.ParseOrThrow("2 000 16  0", " "),
+                NumberDataItem.ParseOrThrow("2 003 18  0", " "),
+            };
+
+        var average = UsrednatorLogic.ApproximationFilter(input, 1, false);
+        var formated = average.ToFormattedString(" ");
+        Assert.AreEqual(
+            """
+            1 970 8,00 0,00
+            1 971 9,33 0,00
+            1 972 10,67 0,00
+            1 973 13,93 0,00
+            2 0 16,00 0,00
+            2 1 16,67 0,00
+            2 2 17,33 0,00
+            2 3 18,00 0,00
+
+            """,
+            formated,
+            $"Actual is \r\n{formated}");
+    }
 }

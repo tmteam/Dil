@@ -28,13 +28,13 @@ namespace Dil.Core.Entities
             var data = new double[splitted.Length - 2];
             for (int i = 2; i < splitted.Length; i++)
             {
-                if (!double.TryParse(splitted[i], NumberStyles.Any, CultureInfo.InvariantCulture, out double val))
+                if (!double.TryParse(splitted[i].Replace(",","."), NumberStyles.Any, CultureInfo.InvariantCulture, out double val))
                     throw new InvalidDataException($"В столбце номер {i} должно быть число - а тут непойми что!");
                 data[i - 2] = val;
             }
             return new NumberDataItem(new Distance(km,m),data);
         }
 
-        public override string ToString() => $"{Distance} ->{Data.Length}";
+        public override string ToString() => $"{Distance} ->[{string.Join(", ",Data)}]";
     }
 }
