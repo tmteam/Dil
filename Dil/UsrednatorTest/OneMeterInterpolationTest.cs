@@ -54,6 +54,23 @@ public class OneMeterInterpolationTest
                 NumberDataItem.ParseOrThrow("6 2   6")
             ]);
     }
+    
+    [Test]
+    public void Test_4()
+    {
+        AssertInterpolation([
+                NumberDataItem.ParseOrThrow("5 999 1"),
+                NumberDataItem.ParseOrThrow("5 1001 1"),
+                NumberDataItem.ParseOrThrow("6 1   1"),
+            ],
+            [
+                NumberDataItem.ParseOrThrow("5 999 1"),
+                NumberDataItem.ParseOrThrow("5 1000 1"),
+                NumberDataItem.ParseOrThrow("5 1001 1"),
+                NumberDataItem.ParseOrThrow("6 0   1"),
+                NumberDataItem.ParseOrThrow("6 1   1"),
+            ]);
+    }
 
     void AssertInterpolation(NumberDataItem[] origin, NumberDataItem[] result)
     {

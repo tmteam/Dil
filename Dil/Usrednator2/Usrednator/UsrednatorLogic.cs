@@ -231,9 +231,6 @@ public static class UsrednatorLogic
         if (!origin.Any())
             return answer;
         var deduplicated = Deduplication(origin);
-        if (useZeroPivots)
-            deduplicated = RemoveKilometerTails(deduplicated);
-        
         //В начале интерполируем все по одному метру
         var interpolatedByMeter = OneMeterInterpolation(deduplicated.ToArray());
         //высчитываем дистанции 
@@ -250,7 +247,8 @@ public static class UsrednatorLogic
             var start = distances[i - 1];
             var end = distances[i];
             var startLeaf = currentValue.ThisOrFirstOrDefault((x) => x.Value.Distance.Equals(start));
-            
+            if(startLeaf==null)
+                break;
             var leaf = startLeaf.Next;
             var acc = startLeaf.Value.Data;
             var count = 1;

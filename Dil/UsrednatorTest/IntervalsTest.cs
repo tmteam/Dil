@@ -313,7 +313,69 @@ public class IntervalsTest
         Kmm(14, 0),
         Kmm(14, 100),
     ]);
-    
+
+    [Test]
+    public void Pivot_8() => AssertInterval(2, true,
+    [
+        Kmm(13, 996),
+        Kmm(13, 1006),
+        Kmm(14, 6),
+    ], [
+        Kmm(13, 996),
+        Kmm(13, 998),
+        Kmm(13, 1000),
+        Kmm(13, 1002),
+        Kmm(13, 1004),
+        Kmm(13, 1006),
+        Kmm(14, 0),
+        Kmm(14, 2),
+        Kmm(14, 4),
+        Kmm(14, 6),
+    ]);
+
+    [Test]
+    public void Pivot_7() => AssertInterval(1, true,
+    [
+        Kmm(13, 990),
+        Kmm(13, 1010),
+        Kmm(14, 10),
+    ], [
+        Kmm(13, 990),
+        Kmm(13, 991),
+        Kmm(13, 992),
+        Kmm(13, 993),
+        Kmm(13, 994),
+        Kmm(13, 995),
+        Kmm(13, 996),
+        Kmm(13, 997),
+        Kmm(13, 998),
+        Kmm(13, 999),
+        Kmm(13, 1000),
+        Kmm(13, 1001),
+        Kmm(13, 1002),
+        Kmm(13, 1003),
+        Kmm(13, 1004),
+        Kmm(13, 1005),
+        Kmm(13, 1006),
+        Kmm(13, 1007),
+        Kmm(13, 1008),
+        Kmm(13, 1009),
+        Kmm(13, 1010),
+        Kmm(14, 0),
+        Kmm(14, 1),
+        Kmm(14, 2),
+        Kmm(14, 3),
+        Kmm(14, 4),
+        Kmm(14, 5),
+        Kmm(14, 6),
+        Kmm(14, 7),
+        Kmm(14, 8),
+        Kmm(14, 9),
+        Kmm(14, 10),
+
+    ]);
+
+
     private void AssertInterval(int step, bool useZeroPivot,  Distance[] origin, Distance[] expected)
     {
         var result = UsrednatorLogic.CalculateIntervals(origin, step, useZeroPivot);

@@ -183,6 +183,37 @@ public class AverageFilterWithPivotTest
     }
     
     [Test]
+    public void Test_pivot_7()
+    {
+        var input =
+            new[]
+            {
+                NumberDataItem.ParseOrThrow("13 999 1", " "),
+                NumberDataItem.ParseOrThrow("13 1001 1", " "),
+                NumberDataItem.ParseOrThrow("14 001 1", " "),
+            };
+
+        var average = UsrednatorLogic.ApproximationFilter(input, 1, true);
+        var formated = average.ToFormattedString(" ");
+        Assert.AreEqual(
+            """
+            13 999 1,00
+            13 1000 1,00
+            13 1001 1,00
+            14 0 1,00
+            14 1 1,00
+            
+            """,
+            formated,
+            $"Actual is \r\n{formated}");
+    }
+    /*
+     * Kmm(13, 990),
+        Kmm(13, 1010),
+        Kmm(14, 10),
+     */
+    
+    [Test]
     public void Test_pivot_bad_km_1()
     {
         var input =
