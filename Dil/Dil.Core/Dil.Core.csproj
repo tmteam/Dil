@@ -45,6 +45,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Cmd.cs" />
+        <Compile Include="DilHelper.cs" />
         <Compile Include="Entities\Coordinates.cs" />
         <Compile Include="Entities\NumberDataItem.cs" />
         <Compile Include="Entities\TextDataItems.cs" />

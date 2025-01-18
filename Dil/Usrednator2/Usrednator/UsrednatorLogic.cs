@@ -311,17 +311,6 @@ public static class UsrednatorLogic
         return filtredText.ToString();
     }
     
-    public static string ToFormattedString(this IEnumerable<NumberDataItem> entries, string separator = "\t")
-    {
-        var filtredText = new StringBuilder();
-        foreach (var entry in entries)
-        {
-            filtredText.AppendLine($"{entry.Distance.Km}{separator}" +
-                                   $"{entry.Distance.M}{separator}" +
-                                   $"{string.Join(separator, entry.Data.Select(d => d.ToString("F2")))}");
-        }
-
-        return filtredText.ToString();
-    }
+    
 
 }

@@ -5,8 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Watercol"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Water col. Рассчет водяного слоя в колее" Height="350" Width="525">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="3"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Label Grid.Column="1" Background="DarkSlateBlue" Grid.RowSpan="100"></Label>
+
+        <StackPanel Grid.Row="1" Margin="10,0,0,0" VerticalAlignment="Center" Grid.Column="2" Orientation="Horizontal" >
+        </StackPanel>
+        <Button Grid.Row="1" Background="White"  Height="30" Name="PasteBtn" Click="PasteBtn_OnClick" >Вставить таблицу из буфера обмена</Button>
+        <TextBox Grid.Row="2" IsReadOnly="True" BorderThickness="0" VerticalScrollBarVisibility="Auto"  HorizontalAlignment="Stretch" Name="TableTxt"/>
+        <TextBox Grid.Row="2" IsReadOnly="True"  BorderThickness="0" VerticalScrollBarVisibility="Auto" Grid.Column="2" HorizontalAlignment="Stretch" Name="ResultTxt"/>
+
+        <Label Grid.Row="3" Grid.Column="0" Name="originLinesLbl"/>
+        <Label Grid.Row="3" Grid.Column="2" Name="resultLinesLbl"/>
+
+        <Button Grid.Row ="4" Background="White"  Height="30" Grid.Column="2" HorizontalAlignment="Stretch" Name="CopyBtn" Click="CopyBtn_OnClick">Копировать результат в буфер обмена</Button>
+        <Label Grid.Row  ="4"  Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="7">Сделано на Кипре</Label>
+
+        <Label FontSize="48" 
+               Grid.RowSpan="20" 
+               Background="White" 
+               HorizontalAlignment="Stretch" 
+               VerticalAlignment="Stretch" 
+               HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               Grid.ColumnSpan="20" 
+               Name="StubLbl" 
+               Visibility="Collapsed"/>
     </Grid>
 </Window>

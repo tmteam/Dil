@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using System.Windows;
+using Dil.Core;
 using Dil.Core.Entities;
 
 namespace Usrednator;
@@ -38,7 +39,7 @@ public partial class MainWindow : Window
             StubLbl.Content = "Идет обработка...";
             StubLbl.Visibility = Visibility.Visible;
             var data = Clipboard.GetText();
-            var lines = await Task.Run(()=>Helper.SplitLines(data));
+            var lines = await Task.Run(()=>DilHelper.SplitLines(data));
             _entries = new LinkedList<NumberDataItem>();
             _results = new LinkedList<NumberDataItem>();
             for (int i = 0; i < lines.Length; i++)
@@ -107,6 +108,5 @@ public partial class MainWindow : Window
             Clipboard.SetText(output);
             MessageBox.Show("Результаты скопированны в буффер. Вставьте их в таблицу Excel или текстовый файл");
         }
-
     }
 }

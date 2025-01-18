@@ -5,16 +5,6 @@ namespace Usrednator;
 
 public static class Helper
 {
-
-
-
-    public static string[] SplitLines(string originalText)
-    {
-        var lines = originalText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        return lines;
-    }
-
-
     public static void ArrayInplaceSummOrThrow(this double[] origin, double[] addition, int? displayRowNumber = null)
     {
         if (origin.Length != addition.Length)
