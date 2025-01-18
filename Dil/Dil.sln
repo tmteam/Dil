@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Usrednator", "Usrednator2\U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsrednatorTest", "UsrednatorTest\UsrednatorTest.csproj", "{A658944C-F50A-4CF7-8BE4-42DD5B9AA332}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Watercol", "Watercol\Watercol\Watercol.csproj", "{CAD00632-2709-4EEC-8B6A-EEA7451A720E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{A658944C-F50A-4CF7-8BE4-42DD5B9AA332}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A658944C-F50A-4CF7-8BE4-42DD5B9AA332}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A658944C-F50A-4CF7-8BE4-42DD5B9AA332}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAD00632-2709-4EEC-8B6A-EEA7451A720E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAD00632-2709-4EEC-8B6A-EEA7451A720E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAD00632-2709-4EEC-8B6A-EEA7451A720E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAD00632-2709-4EEC-8B6A-EEA7451A720E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
