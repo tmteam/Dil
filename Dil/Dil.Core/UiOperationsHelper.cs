@@ -50,7 +50,7 @@ namespace Dil.Core
 
             return default;
         }
-
+    
         public static void SetDataToClipboard(string data)
         {
             Clipboard.SetText(data);

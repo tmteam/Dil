@@ -297,20 +297,4 @@ public static class UsrednatorLogic
         }
         return answer;
     }
-    
-    
-    public static string ConvertTableToFormatedText(IEnumerable<NumberDataItem> data)
-    {
-        var filtredText = new StringBuilder();
-        foreach (var entry in data)
-        {
-            filtredText.AppendLine(
-                $"{entry.Distance.Km}\t{entry.Distance.M}\t{string.Join("\t", entry.Data.Select(d => d.ToString("F1")))}");
-        }
-
-        return filtredText.ToString();
-    }
-    
-    
-
 }

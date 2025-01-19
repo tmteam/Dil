@@ -68,9 +68,9 @@ public partial class MainWindow : Window
                 UsrednatorLogic.SetZeroPivot(_entries, averageMeters);
             var useNextIntervalStart = useNextChbx.IsChecked == true;
             
-            var resultText  = await Task.Run(()=> UsrednatorLogic.ConvertTableToFormatedText(_entries));
+            var resultText  = await Task.Run(()=> DilHelper.ConvertTableToFormatedText(_entries));
             _results        = await Task.Run(()=> UsrednatorLogic.ApproximationFilter(_entries, averageMeters, useZeroPivots, useNextIntervalStart));
-            var filtredText = await Task.Run(()=> UsrednatorLogic.ConvertTableToFormatedText(_results));
+            var filtredText = await Task.Run(()=> DilHelper.ConvertTableToFormatedText(_results));
 
             TableTxt.Text = resultText;
             ResultTxt.Text = filtredText;

@@ -15,7 +15,7 @@ namespace Watercol
     public partial class MainWindow
     {
         private LinkedList<NumberDataItem> _entries = null;
-        private LinkedList<NumberDataItem> _results = null;
+        private IList<NumberDataItem> _results = null;
 
         public MainWindow()
         {
@@ -38,7 +38,7 @@ namespace Watercol
                 var lines = await Task.Run(() => DilHelper.SplitLines(data));
 
                 _entries = new LinkedList<NumberDataItem>();
-                _results = new LinkedList<NumberDataItem>();
+                _results = new List<NumberDataItem>();
                 for (int i = 0; i < lines.Length; i++)
                 {
                     try
@@ -59,14 +59,13 @@ namespace Watercol
                     return;
                 }
 
-                /*
-                var resultText  = await Task.Run(()=> UsrednatorLogic.ConvertTableToFormatedText(_entries));
-                _results        = await Task.Run(()=> UsrednatorLogic.ApproximationFilter(_entries, averageMeters, useZeroPivots, useNextIntervalStart));
-                var filtredText = await Task.Run(()=> UsrednatorLogic.ConvertTableToFormatedText(_results));
+                _results = _entries.Select(e => WaterColRow.FromRow(e).ToNumberDataItem()).ToList();
+                
+                var resultText  = await Task.Run(()=> DilHelper.ConvertTableToFormatedText(_entries));
+                var filtredText = await Task.Run(()=> DilHelper.ConvertTableToFormatedText(_results));
 
                 TableTxt.Text = resultText;
                 ResultTxt.Text = filtredText;
-                */
             }
             catch (Exception)
             {
