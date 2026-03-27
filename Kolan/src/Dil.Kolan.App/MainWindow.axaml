@@ -1,0 +1,115 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Dil.Kolan.App"
+        xmlns:sp="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+        x:Class="Dil.Kolan.App.MainWindow"
+        x:DataType="local:MainViewModel"
+        Title="Колян 2 — назначение карт ремонта"
+        Width="1200" Height="800"
+        MinWidth="900" MinHeight="600">
+
+    <Window.DataContext>
+        <local:MainViewModel />
+    </Window.DataContext>
+
+    <DockPanel Margin="12">
+
+        <!-- Верхняя панель: кнопки и параметры -->
+        <Border DockPanel.Dock="Top" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="Вставить из буфера" Click="OnPasteClick" Padding="12,6" />
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Порог" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding Threshold}" Width="50" />
+                    <TextBlock Text="мм" VerticalAlignment="Center" Foreground="Gray" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Окно" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding WindowSize}" Width="40" />
+                    <TextBlock Text="м" VerticalAlignment="Center" Foreground="Gray" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Мин.карта" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding MinCardLength}" Width="50" />
+                    <TextBlock Text="м" VerticalAlignment="Center" Foreground="Gray" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Объед." VerticalAlignment="Center" />
+                    <TextBox Text="{Binding MergeDistance}" Width="50" />
+                    <TextBlock Text="м" VerticalAlignment="Center" Foreground="Gray" />
+                </StackPanel>
+                <Button Content="Копировать результат" Click="OnCopyClick" Padding="12,6"
+                        IsEnabled="{Binding HasResults}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Нижняя строка: статус + подпись -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+            <TextBlock Text="{Binding StatusText}" Foreground="Gray" />
+            <TextBlock DockPanel.Dock="Right" Text="Сделано в Грузии. ИИ и человеком."
+                       Foreground="LightGray" FontSize="11" HorizontalAlignment="Right" />
+        </DockPanel>
+
+        <!-- Основная область: график сверху, таблицы снизу -->
+        <Grid RowDefinitions="3*,6,2*">
+
+            <!-- График + тепловая полоса -->
+            <DockPanel Grid.Row="0">
+                <!-- Тепловая полоса внизу графика -->
+                <Canvas x:Name="HeatStrip" DockPanel.Dock="Bottom" Height="12"
+                        Margin="0,2,0,0" />
+                <!-- Основной график -->
+                <sp:AvaPlot x:Name="MainPlot" />
+            </DockPanel>
+
+            <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="Transparent" />
+
+            <!-- Таблицы: входные данные слева, результат справа -->
+            <Grid Grid.Row="2" ColumnDefinitions="1*,8,2*">
+
+                <DockPanel Grid.Column="0">
+                    <TextBlock DockPanel.Dock="Top" Text="Исходные данные"
+                               Foreground="Gray" Margin="0,0,0,4" FontSize="12" />
+                    <DataGrid ItemsSource="{Binding InputRows}"
+                              IsReadOnly="True"
+                              GridLinesVisibility="Horizontal"
+                              BorderThickness="1" BorderBrush="LightGray"
+                              CanUserResizeColumns="True" FontSize="11"
+                              AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Км" Binding="{ReflectionBinding Km}" Width="*" />
+                            <DataGridTextColumn Header="М" Binding="{ReflectionBinding Meter}" Width="*" />
+                            <DataGridTextColumn Header="Лев.колея" Binding="{ReflectionBinding Left}" Width="*" />
+                            <DataGridTextColumn Header="Прав.колея" Binding="{ReflectionBinding Right}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+
+                <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="Transparent" />
+
+                <DockPanel Grid.Column="2">
+                    <TextBlock DockPanel.Dock="Top" Text="Карты ремонта"
+                               Foreground="Gray" Margin="0,0,0,4" FontSize="12" />
+                    <DataGrid ItemsSource="{Binding Cards}"
+                              IsReadOnly="True"
+                              GridLinesVisibility="Horizontal"
+                              BorderThickness="1" BorderBrush="LightGray"
+                              CanUserResizeColumns="True" FontSize="12"
+                              AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{ReflectionBinding Number}" Width="Auto" MinWidth="30" />
+                            <DataGridTextColumn Header="Начало" Binding="{ReflectionBinding Start}" Width="*" />
+                            <DataGridTextColumn Header="Конец" Binding="{ReflectionBinding End}" Width="*" />
+                            <DataGridTextColumn Header="Длина" Binding="{ReflectionBinding Length}" Width="Auto" MinWidth="50" />
+                            <DataGridTextColumn Header="Ср.Л" Binding="{ReflectionBinding AvgLeft}" Width="*" />
+                            <DataGridTextColumn Header="Ср.П" Binding="{ReflectionBinding AvgRight}" Width="*" />
+                            <DataGridTextColumn Header="Мкс.Л" Binding="{ReflectionBinding MaxLeft}" Width="*" />
+                            <DataGridTextColumn Header="Мкс.П" Binding="{ReflectionBinding MaxRight}" Width="*" />
+                            <DataGridTextColumn Header="Удл." Binding="{ReflectionBinding Extended}" Width="Auto" MinWidth="40" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
